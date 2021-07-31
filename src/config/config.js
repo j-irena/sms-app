@@ -8,7 +8,9 @@ const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
-    MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+    MONGODB_URL: Joi.string().required().description('Mongo DB URL'),
+    SMS_SERVICE: Joi.string().required().description('Sms Service'),
+    BAD_WORDS_URL: Joi.string().required().description('URL containing a list of bad words'),
     // JWT_SECRET: Joi.string().required().description('JWT secret key'),
     // JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
     // JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
@@ -28,6 +30,8 @@ if (error) {
 }
 
 module.exports = {
+  smsService: envVars.SMS_SERVICE,
+  badWordsUrl: envVars.BAD_WORDS_URL,
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   mongoose: {
