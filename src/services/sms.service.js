@@ -50,10 +50,11 @@ const sendSms = async (sms) => {
       .catch((error) => {
         console.error(`sendSms:${error}`);
         smsRes.sendResult = smsResult.FAILED;
-      });
+      })
+      .finally(() => {
+        saveSms(smsRes);
+      })
   }
-  saveSms(smsRes);
-  return smsRes;
 };
 
 module.exports = {
