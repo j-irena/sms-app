@@ -17,9 +17,6 @@ const getBadWords = async () => {
 };
 */
 
-
-
-
 const badWordsArr = axios.get(config.badWordsUrl).then((res) => {
   const badWordsArr = res.data.replace(/\r\n/g, '\n').split('\n');
   badWordsArr.shift();

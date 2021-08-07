@@ -3,7 +3,6 @@ const axios = require('axios');
 const { Sms } = require('../models');
 const config = require('../config/config');
 const { smsResult } = require('../config/smsResult');
-const moment = require('moment');
 
 const saveSms = async (sms) => {
   return Sms.create(sms);
@@ -12,16 +11,6 @@ const saveSms = async (sms) => {
 const getSmsById = async (id) => {
   return Sms.findById(id);
 };
-
-function deleteOldRecords(){
-  let older_than = moment().subtract(1, 'hours').toDate();
-  Sms.find({ createdAt: { $lte: older_than } }).deleteMany().exec().then((RemoveStatus) => {
-      console.log("Documents Removed Successfully");
-  }).catch((err) => {
-      console.error('something error');
-      console.error(err);
-  })
-}
 
 const getBadWords = async () => {
   return axios
@@ -64,7 +53,6 @@ const sendSms = async (sms) => {
       });
   }
   saveSms(smsRes);
-  deleteOldRecords();
   return smsRes;
 };
 
