@@ -3,6 +3,7 @@ const axios = require('axios');
 const { Sms } = require('../models');
 const config = require('../config/config');
 const { smsResult } = require('../config/smsResult');
+const moment = require('moment');
 
 const saveSms = async (sms) => {
   return Sms.create(sms);
@@ -11,6 +12,16 @@ const saveSms = async (sms) => {
 const getSmsById = async (id) => {
   return Sms.findById(id);
 };
+
+function deleteOldRecords(){
+  let older_than = moment().subtract(1, 'hours').toDate();
+  Sms.find({ createdAt: { $lte: older_than } }).deleteMany().exec().then((RemoveStatus) => {
+      console.log("Documents Removed Successfully");
+  }).catch((err) => {
+      console.error('something error');
+      console.error(err);
+  })
+}
 
 const getBadWords = async () => {
   return axios
@@ -32,12 +43,13 @@ const detectBadWords = async (smsBody) => {
 };
 
 const sendSms = async (sms) => {
+  let smsRes = sms;
+  smsRes.sendResult = smsResult.ACCEPTED;
   const http = rateLimit(axios.create(), { maxRequests: 10, perMilliseconds: 1000, maxRPS: 10 });
-  let smsRes = null;
   const areBadWordsDetected = await detectBadWords(sms.message);
-  if (areBadWordsDetected) {
+  if (areBadWordsDetected && areBadWordsDetected?.length > 0) {
     console.log(`A bad word: ${areBadWordsDetected} was detected. Message would not be sent`);
-    // smsRes.sendResult = smsResult.FAILED;
+    smsRes.sendResult = smsResult.FAILED;
   } else {
     http
       .post(`${config.smsService}/v1/sms/sendSms`, { sms })
@@ -50,8 +62,9 @@ const sendSms = async (sms) => {
         console.error(`sendSms:${error}`);
         smsRes.sendResult = smsResult.FAILED;
       });
-    saveSms(smsRes);
   }
+  saveSms(smsRes);
+  deleteOldRecords();
   return smsRes;
 };
 
